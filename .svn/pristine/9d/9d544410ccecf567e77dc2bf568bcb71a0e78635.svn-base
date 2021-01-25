@@ -1,0 +1,129 @@
+<template>
+    <div class="radio-card">
+        <div class="title">
+            <span class="text">填空题</span><span class="score">总得分：<span class="num">12</span></span>
+        </div>
+        <ul class="list">
+            <li v-for="item in 7" :key="item">
+                <div class="btns">
+                    <div class="index">{{ item }}.</div>
+                    <div class="ok btn">满分</div>
+                    <div class="no btn">零分</div>
+                    <div class="num">
+                        自定义分值：
+                        <input class="input" type="number" v-model="input" maxlength="3" />
+                    </div>
+                </div>
+                <div class="textarea">
+                    <el-input
+                        type="textarea"
+                        v-model="textarea"
+                        :maxlength="200"
+                        show-word-limit
+                        placeholder="输入批改意见内容"
+                    ></el-input>
+                </div>
+            </li>
+        </ul>
+    </div>
+</template>
+<script>
+export default {
+    data() {
+        return {
+            input: '',
+            textarea: '',
+        };
+    },
+};
+</script>
+<style lang="scss" scoped>
+.radio-card {
+    .title {
+        height: 40px;
+        line-height: 40px;
+        padding: 0 8px;
+        background-color: #fafafa;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        .text {
+            font-size: 16px;
+            font-weight: 500;
+            color: rgba(9, 34, 56, 1);
+            line-height: 16px;
+        }
+        .score {
+            font-size: 14px;
+            color: rgba(9, 34, 56, 1);
+            line-height: 14px;
+            .num {
+                color: #ed6d00;
+            }
+        }
+    }
+    .list {
+        list-style: none;
+        li {
+            background-color: #fff;
+            .btns {
+                height: 40px;
+                line-height: 40px;
+                padding: 0 16px;
+                display: flex;
+                align-items: center;
+                position: relative;
+                .index {
+                    display: inline-block;
+                    width: 24px;
+                }
+                .btn {
+                    width: 48px;
+                    height: 24px;
+                    text-align: center;
+                    font-size: 14px;
+                    font-weight: 500;
+                    color: #fff;
+                    line-height: 24px;
+                    border-radius: 16px;
+                    cursor: pointer;
+                }
+                .ok {
+                    background: rgba(48, 203, 130, 1);
+                    margin-right: 8px;
+                }
+                .no {
+                    background: #f85a57;
+                    margin-right: 18px;
+                }
+                .num {
+                    font-size: 14px;
+                    color: rgba(9, 34, 56, 1);
+                    position: absolute;
+                    right: 16px;
+                    .input {
+                        width: 40px;
+                        height: 24px;
+                        text-align: center;
+                        padding: 0 3px;
+                        border: 1px solid #cccccc;
+                        box-sizing: border-box;
+                        border-radius: 12px;
+                    }
+                }
+            }
+            .textarea {
+                padding: 8px 16px 8px 36px;
+            }
+        }
+    }
+}
+
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+}
+input[type='number'] {
+    -moz-appearance: textfield;
+}
+</style>

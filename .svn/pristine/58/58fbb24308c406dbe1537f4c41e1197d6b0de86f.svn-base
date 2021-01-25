@@ -1,0 +1,187 @@
+<template>
+    <div class="work-statistics">
+        <el-button size="small" type="warning" @click="dialogVisible = true">试题分析</el-button>
+        <el-button size="small" type="warning">刷新</el-button>
+        <div>
+            <el-table :data="tableData" stripe style="width: 100%">
+                <el-table-column prop="date" label="排名" width="60">
+                    <template slot-scope="scope">
+                        <span>{{ scope.$index + 1 }}</span>
+                    </template>
+                </el-table-column>
+                <el-table-column prop="date" label="姓名"> </el-table-column>
+                <el-table-column prop="subject" label="手机号" width="80"> </el-table-column>
+                <el-table-column prop="chapter" label="提交方式"> </el-table-column>
+                <el-table-column prop="name" label="提交时间"> </el-table-column>
+                <el-table-column prop="address" label="完成率"> </el-table-column>
+                <el-table-column prop="address" label="作答用时"> </el-table-column>
+                <el-table-column label="状态" width="80">
+                    <template slot-scope="scope">
+                        <span>{{ tableStatus[scope.row.status] }}</span>
+                    </template>
+                </el-table-column>
+                <el-table-column prop="address" label="得分"> </el-table-column>
+                <el-table-column fixed="right" label="操作" width="200">
+                    <template>
+                        <el-button type="text" size="small" style="color: #25BA43" @click="goCorrectCard">批改</el-button>
+                        <el-button type="text" size="small" style="color: #ED6D00">查看</el-button>
+                    </template>
+                </el-table-column>
+            </el-table>
+        </div>
+        <router-view></router-view>
+        <el-dialog title="试题分析" :visible.sync="dialogVisible" width="800px">
+            <div class="dialog">
+                <el-table :data="tableData" stripe style="width: 100%">
+                    <el-table-column prop="date" label="序号" width="60">
+                        <template slot-scope="scope">
+                            <span>{{ scope.$index + 1 }}</span>
+                        </template>
+                    </el-table-column>
+                    <el-table-column prop="date" label="题型"> </el-table-column>
+                    <el-table-column prop="chapter" label="分值"> </el-table-column>
+                    <el-table-column prop="name" label="得分率">
+                        <template slot-scope="scope">
+                            <span class="color-yellow">{{ scope.row.status + '0%' }}</span>
+                        </template>
+                    </el-table-column>
+                    <el-table-column prop="address" label="正答率">
+                        <template slot-scope="scope">
+                            <span class="color-green">{{ scope.row.status + '0%' }}</span>
+                        </template>
+                    </el-table-column>
+                    <el-table-column prop="address" label="错答率1">
+                        <template slot-scope="scope">
+                            <span class="color-red">{{ scope.row.status + '0%' }}</span>
+                        </template>
+                    </el-table-column>
+                    <el-table-column prop="address" label="错答率2">
+                        <template slot-scope="scope">
+                            <span class="color-red">{{ scope.row.status + '0%' }}</span>
+                        </template>
+                    </el-table-column>
+                    <el-table-column prop="address" label="空答率">
+                        <template slot-scope="scope">
+                            <span>{{ scope.row.status + '0%' }}</span>
+                        </template>
+                    </el-table-column>
+                </el-table>
+            </div>
+        </el-dialog>
+    </div>
+</template>
+
+<script>
+export default {
+    data() {
+        return {
+            dialogVisible: false,
+            tableStatus: ['已下发', '新建中', '待下发', '已收取', '待批改', '批改中', '待发布', '已发布'],
+            tableData: [
+                {
+                    date: '小明',
+                    subject: '语文',
+                    chapter: '论语',
+                    name: '答题截止下发',
+                    address: '2020-09-22  08:00',
+                    status: 1,
+                },
+                {
+                    date: '小明3',
+                    subject: '语文3',
+                    chapter: '论语2',
+                    name: '答题截止下发',
+                    address: '2020-09-22  08:00',
+                    status: 2,
+                },
+                {
+                    date: '小明2',
+                    subject: '语文',
+                    chapter: '论语',
+                    name: '答题截止下发',
+                    address: '2020-09-22  08:00',
+                    status: 4,
+                },
+                {
+                    date: '小明',
+                    name: '答题截止下发',
+                    address: '2020-09-22  08:00',
+                    status: 6,
+                },
+                {
+                    date: '小明',
+                    subject: '语文2',
+                    chapter: '论语2',
+                    name: '答题截止下发',
+                    address: '2020-09-22  08:00',
+                    status: 7,
+                },
+                {
+                    date: '小明',
+                    name: '答题截止下发',
+                    address: '2020-09-22  08:00',
+                    status: '已下发',
+                },
+                {
+                    date: '操作手册视频随堂测验',
+                    name: '答题截止下发',
+                    address: '2020-09-22  08:00',
+                    status: '已下发',
+                },
+                {
+                    date: '操作手册视频随堂测验',
+                    name: '答题截止下发',
+                    address: '2020-09-22  08:00',
+                    status: '已下发',
+                },
+                {
+                    date: '操作手册视频随堂测验',
+                    name: '答题截止下发',
+                    address: '2020-09-22  08:00',
+                    status: '已下发',
+                },
+                {
+                    date: '操作手册视频随堂测验',
+                    name: '答题截止下发',
+                    address: '2020-09-22  08:00',
+                    status: '已下发',
+                },
+                {
+                    date: '操作手册视频随堂测验',
+                    name: '答题截止下发',
+                    address: '2020-09-22  08:00',
+                    status: '已下发',
+                },
+            ],
+        };
+    },
+
+    methods: {
+        goCorrectCard() {
+            this.$router.push({
+                path: '/teacherPage/taskCenter/correctCard',
+            });
+        },
+    },
+};
+</script>
+
+<style lang="scss">
+.work-statistics {
+    .dialog {
+        padding: 0 16px;
+        .el-table {
+            border: 1px solid #eee;
+        }
+    }
+    .color-yellow {
+        color: #ff942e;
+    }
+    .color-green {
+        color: #30cb82;
+    }
+    .color-red {
+        color: #f85a57;
+    }
+}
+</style>

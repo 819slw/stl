@@ -1,0 +1,23 @@
+import request from '@/axios/request';
+
+/**
+ * 获取列表
+ */
+export const $_getHomeworkList = (data) => {
+    return request({
+        url: '/practice/homework/query',
+        method: 'post',
+        data,
+    });
+};
+
+/**
+ * 删除作业
+ */
+export const $_delHomework = (data) => {
+    return request({
+        url: '/practice/homework/deleteById',
+        data,
+        method: 'post',
+    });
+};

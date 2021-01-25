@@ -1,0 +1,90 @@
+<template>
+    <div class="radio-card">
+        <div class="title">
+            <span class="text">单选题</span><span class="score">总得分：<span class="num">12</span></span>
+        </div>
+        <ul class="list">
+            <li v-for="item in 7" :key="item">
+                <div class="index">{{ item }}.</div>
+                <div class="ok btn">正确</div>
+                <div class="no btn">错误</div>
+                <div class="num">得分：4</div>
+            </li>
+        </ul>
+    </div>
+</template>
+<script>
+export default {
+    data() {
+        return {
+            //
+        };
+    },
+};
+</script>
+<style lang="scss" scoped>
+.radio-card {
+    .title {
+        height: 40px;
+        line-height: 40px;
+        padding: 0 8px;
+        background-color: #fafafa;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        .text {
+            font-size: 16px;
+            font-weight: 500;
+            color: rgba(9, 34, 56, 1);
+            line-height: 16px;
+        }
+        .score {
+            font-size: 14px;
+            color: rgba(9, 34, 56, 1);
+            line-height: 14px;
+            .num {
+                color: #ed6d00;
+            }
+        }
+    }
+    .list {
+        list-style: none;
+        li {
+            height: 40px;
+            line-height: 40px;
+            padding: 0 16px;
+            background-color: #fff;
+            display: flex;
+            align-items: center;
+            position: relative;
+            .index {
+                display: inline-block;
+                width: 24px;
+            }
+            .btn {
+                width: 48px;
+                height: 24px;
+                text-align: center;
+                font-size: 14px;
+                font-weight: 500;
+                color: #fff;
+                line-height: 24px;
+                border-radius: 16px;
+                margin-right: 16px;
+                cursor: pointer;
+            }
+            .ok {
+                background: rgba(48, 203, 130, 1);
+            }
+            .no {
+                background: #f85a57;
+            }
+            .num {
+                position: absolute;
+                top: 0;
+                right: 32px;
+            }
+        }
+    }
+}
+</style>

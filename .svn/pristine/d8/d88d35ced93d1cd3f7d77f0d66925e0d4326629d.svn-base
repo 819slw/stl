@@ -1,0 +1,379 @@
+<template>
+    <div class="answer-sheet">
+        <el-row>
+            <el-button type="warning" @click="openModal">新建</el-button>
+        </el-row>
+        <div class="table" ref="table">
+            <el-table
+                :data="tableData"
+                size="small"
+                style="width: 100%"
+                :height="tableHeight"
+                :header-cell-style="{ background: 'rgba(245,247,250,0.9)', color: '#909399' }"
+            >
+                <el-table-column prop="class" label="题型"> </el-table-column>
+                <el-table-column prop="name" label="数量"> </el-table-column>
+                <el-table-column prop="num" label="总分"> </el-table-column>
+                <el-table-column prop="name" label="批改方式"> </el-table-column>
+                <el-table-column label="操作" width="180">
+                    <template slot-scope="scope">
+                        <el-button
+                            class="handle-btn"
+                            type="text"
+                            size="small"
+                            @click="lookHandle(scope.$index, scope.row)"
+                            >查看</el-button
+                        >
+                        <el-button
+                            v-if="scope.$index !== 0"
+                            class="handle-btn"
+                            type="text"
+                            size="small"
+                            @click="shiftUp(scope.$index, scope.row)"
+                            >上移</el-button
+                        >
+                        <el-button
+                            v-if="scope.$index !== tableData.length - 1"
+                            class="handle-btn"
+                            type="text"
+                            size="small"
+                            @click="moveDown(scope.$index, scope.row)"
+                            >下移</el-button
+                        >
+                        <el-button
+                            class="handle-btn"
+                            type="text"
+                            size="small"
+                            @click="deleteHandle(scope.$index, scope.row)"
+                            >删除</el-button
+                        >
+                    </template>
+                </el-table-column>
+            </el-table>
+        </div>
+        <el-row>
+            <el-button class="plain-btn" @click="beforePage">上一步</el-button>
+            <el-button type="warning" @click="onSubmit">保存并下一步</el-button>
+            <el-button class="plain-btn">保存</el-button>
+        </el-row>
+        <!-- 新建 -->
+        <el-dialog title="新建答题卡" :visible.sync="isShown">
+            <topic-form v-model="data" :formItems="formItems" />
+            <p class="info">提示：带 “<span class="icon-all">*</span>” 为必选必填项</p>
+            <span slot="footer" class="dialog-footer">
+                <el-button @click="closeModal">取消</el-button>
+                <el-button type="warning" @click="addsubmit">确定</el-button>
+            </span>
+        </el-dialog>
+    </div>
+</template>
+<script>
+import topicForm from '@/components/topicForm';
+
+export default {
+    components: {
+        topicForm,
+    },
+
+    data() {
+        const questions = {
+            type: 'select',
+            label: '题型',
+            key: 'class',
+            placeholder: '请选择题型',
+            items: [
+                { value: '1', label: '单选题' },
+                { value: '2', label: '多选题' },
+                { value: '3', label: '判断题' },
+                { value: '4', label: '填空题' },
+                { value: '5', label: '简答题' },
+            ],
+            rules: [{ required: true, message: '请选择题型', trigger: 'blur' }],
+        };
+
+        const subjectNum = {
+            type: 'numberInput',
+            label: '题目数量',
+            key: 'number',
+            placeholder: '请输入题目数量',
+            rules: [{ required: true, type: 'number', message: '请输入题目数量', trigger: 'blur' }],
+        };
+
+        const subjectScore = {
+            type: 'numberInput',
+            label: '单题分值',
+            key: 'number2',
+            placeholder: '请输入单题分值',
+        };
+
+        const subjectMissing = {
+            type: 'numberInput',
+            label: '漏选得分',
+            key: 'number2',
+            placeholder: '请输入漏选得分',
+        };
+
+        const subjectOptionsNum = {
+            type: 'iconNumberInput',
+            label: '选项数量',
+            key: 'number13',
+            rules: [{ required: true, type: 'number', message: '请输入选项数量', trigger: 'blur' }],
+        };
+
+        const optionsInterval = {
+            type: 'input',
+            label: '选项区间',
+            key: 'abcd',
+            placeholder: '请输入选项区间',
+            rules: [{ required: true, message: '请输入选项区间', trigger: 'blur' }],
+        };
+
+        const optionsCorrecting = {
+            type: 'radio',
+            label: '批改方式',
+            key: 'abcde',
+            placeholder: '请输入选项区间',
+            items: [
+                { label: '1', text: '系统批改' },
+                { label: '2', text: '老师批改' },
+            ],
+            rules: [{ required: true, message: '请选择批改方式', trigger: 'blur' }],
+        };
+
+        const optionsCorrecting2 = {
+            type: 'radio',
+            label: '批改方式',
+            key: 'abcde',
+            placeholder: '请输入选项区间',
+            items: [
+                { label: '1', text: '老师批改' },
+                { label: '2', text: '学生自行核对' },
+            ],
+            rules: [{ required: true, message: '请选择批改方式', trigger: 'blur' }],
+        };
+
+        return {
+            tableHeight: 210,
+            isShown: false,
+            tableData: [
+                {
+                    class: '单选题',
+                    num: '0',
+                    name: '王小虎',
+                    address: '上海市普陀区金沙江路 1518 弄',
+                },
+                {
+                    class: '单选题',
+                    num: '1',
+                    name: '王小虎1',
+                    address: '上海市普陀区金沙江路 1517 弄',
+                },
+                {
+                    class: '单选题',
+                    num: '2',
+                    name: '王小虎2',
+                    address: '上海市普陀区金沙江路 1519 弄',
+                },
+                {
+                    class: '单选题',
+                    num: '3',
+                    name: '王小虎3',
+                    address: '上海市普陀区金沙江路 1516 弄',
+                },
+                {
+                    class: '单选题',
+                    num: '4',
+                    name: '王小虎4',
+                    address: '上海市普陀区金沙江路 1519 弄',
+                },
+                {
+                    class: '单选题',
+                    num: '5',
+                    name: '王小虎5',
+                    address: '上海市普陀区金沙江路 1516 弄',
+                },
+                {
+                    class: '单选题',
+                    num: '6',
+                    name: '王小虎6',
+                    address: '上海市普陀区金沙江路 1519 弄',
+                },
+                {
+                    class: '单选题',
+                    num: '7',
+                    name: '王小虎7',
+                    address: '上海市普陀区金沙江路 1516 弄',
+                },
+                {
+                    class: '单选题',
+                    num: '8',
+                    name: '王小虎8',
+                    address: '上海市普陀区金沙江路 1519 弄',
+                },
+                {
+                    class: '单选题',
+                    num: '9',
+                    name: '王小虎9',
+                    address: '上海市普陀区金沙江路 1516 弄',
+                },
+                {
+                    class: '单选题',
+                    num: '00',
+                    name: '王小虎00',
+                    address: '上海市普陀区金沙江路 1519 弄',
+                },
+                {
+                    class: '单选题',
+                    num: '12',
+                    name: '王小虎',
+                    address: '上海市普陀区金沙江路 1516 弄',
+                },
+                {
+                    class: '单选题',
+                    num: '8',
+                    name: '王小虎',
+                    address: '上海市普陀区金沙江路 1519 弄',
+                },
+                {
+                    class: '单选题',
+                    num: '12',
+                    name: '王小虎',
+                    address: '上海市普陀区金沙江路 1516 弄',
+                },
+                {
+                    class: '单选题',
+                    num: '8',
+                    name: '王小虎',
+                    address: '上海市普陀区金沙江路 1519 弄',
+                },
+                {
+                    class: '单选题',
+                    num: '12',
+                    name: '王小虎',
+                    address: '上海市普陀区金沙江路 1516 弄',
+                },
+            ],
+            data: {
+                class: '1',
+                number: 4,
+                number13: 4,
+                abcd: 'ABCD',
+            },
+            formItems: [],
+            subjectClass1: [questions, subjectNum, subjectScore, subjectOptionsNum, optionsInterval, optionsCorrecting],
+            subjectClass2: [
+                questions,
+                subjectNum,
+                subjectScore,
+                subjectMissing,
+                subjectOptionsNum,
+                optionsInterval,
+                optionsCorrecting,
+            ],
+            subjectClass3: [questions, subjectNum, subjectScore, optionsCorrecting],
+            subjectClass4: [questions, subjectNum, subjectScore, optionsCorrecting2],
+            subjectClass5: [questions, subjectNum, subjectScore, optionsCorrecting2],
+        };
+    },
+
+    watch: {
+        'data.class'(num) {
+            this.formItems = this['subjectClass' + num];
+        },
+        'data.number13'() {
+            const text = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.slice(0, this.data.number13);
+            this.$set(this.data, 'abcd', text);
+        },
+    },
+
+    methods: {
+        openModal() {
+            this.isShown = true;
+        },
+
+        // 表格高度
+        setTableHeight() {
+            this.$nextTick(() => {
+                this.tableHeight = this.$refs.table.clientHeight - 24;
+            });
+        },
+
+        onSubmit() {
+            this.$emit('changeActive', 3);
+        },
+
+        beforePage() {
+            this.$emit('changeActive', 1);
+        },
+
+        lookHandle(index, row) {
+            //
+            console.log(index, row);
+        },
+
+        // 上移
+        shiftUp(index) {
+            let [a, b] = [this.tableData[index - 1], this.tableData[index]];
+            this.$set(this.tableData, index - 1, b);
+            this.$set(this.tableData, index, a);
+        },
+
+        // 下移
+        moveDown(index) {
+            let [a, b] = [this.tableData[index], this.tableData[index + 1]];
+            this.$set(this.tableData, index, b);
+            this.$set(this.tableData, index + 1, a);
+        },
+
+        // 删除答题卡题型
+        deleteHandle(index, row) {
+            //
+            console.log(index, row);
+        },
+
+        // 新增确定
+        addsubmit() {
+            this.closeModal();
+            console.log(this.data);
+        },
+
+        closeModal() {
+            this.isShown = false;
+        },
+    },
+
+    mounted() {
+        this.formItems = this.subjectClass1;
+
+        this.setTableHeight();
+        window.addEventListener('resize', () => {
+            this.setTableHeight();
+        });
+    },
+};
+</script>
+<style lang="scss" scoped>
+.answer-sheet {
+    display: flex;
+    flex-direction: column;
+    .table {
+        flex: 1;
+        padding: 12px 0;
+        overflow: hidden;
+    }
+    .plain-btn {
+        color: #ed6d00;
+        border: 1px solid #ed6d00;
+    }
+    .handle-btn {
+        color: #ed6d00;
+    }
+    .info {
+        font-size: 14px;
+        color: #b1b9bf;
+        .icon-all {
+            color: #ed6d00;
+        }
+    }
+}
+</style>

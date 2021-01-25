@@ -1,0 +1,12 @@
+import request from '@/axios/request';
+
+/**
+ * 新建作业
+ */
+export const $_addHomework = (data) => {
+    return request({
+        url: '/practice/homework/insert',
+        method: 'post',
+        data,
+    });
+};

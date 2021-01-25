@@ -1,0 +1,15 @@
+<template>
+  <div>无答题卡作答</div>
+</template>
+
+<script>
+export default {
+  name: "nonAnswer",
+  data() {
+    return {};
+  }
+};
+</script>
+
+<style scoped lang="less">
+</style>

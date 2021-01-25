@@ -1,0 +1,205 @@
+<template>
+    <div class="taskListContainer">
+        <el-button size="small" type="warning" @click="navigateTo">新建作业</el-button>
+        <div>
+            <el-table :data="tableData" stripe style="width: 100%">
+                <el-table-column prop="workName" label="作业名称"> </el-table-column>
+                <el-table-column prop="subjectName" label="学科" width="80"> </el-table-column>
+                <el-table-column prop="chapterName" label="章节名称"> </el-table-column>
+                <el-table-column label="答案下发方式">
+                    <template slot-scope="scope">
+                        <p>{{ answerStatus[scope.row.answerDistributionMethod] }}</p>
+                        <p v-if="scope.row.answerDistributionMethod === 3">{{ scope.row.answerReleaseTime }}</p>
+                    </template>
+                </el-table-column>
+                <el-table-column prop="closeTime" label="答题截止时间"> </el-table-column>
+                <el-table-column fixed="right" label="状态" width="80">
+                    <template slot-scope="scope">
+                        <span>{{ tableStatus[scope.row.status] }}</span>
+                    </template>
+                </el-table-column>
+                <el-table-column fixed="right" label="操作" width="230">
+                    <template slot-scope="scope">
+                        <el-button v-if="scope.row.status === 2" type="text" size="small" style="color: #ED6D00"
+                            >编辑</el-button
+                        >
+                        <el-button v-if="scope.row.status === 1" type="text" size="small" style="color: #ED6D00"
+                            >继续编辑</el-button
+                        >
+                        <el-button
+                            v-if="(scope.row.status === 7 && scope.row.isUseAnswerCard === 0) || scope.row.status === 8"
+                            type="text"
+                            size="small"
+                            style="color: #ED6D00"
+                            >查看</el-button
+                        >
+                        <el-button
+                            v-if="scope.row.status === 4 || scope.row.status === 5"
+                            type="text"
+                            size="small"
+                            style="color: #ED6D00"
+                            >批改</el-button
+                        >
+                        <el-button v-if="scope.row.status === 6" type="text" size="small" style="color: #ED6D00"
+                            >批改发布</el-button
+                        >
+                        <el-button
+                            v-if="scope.row.status === 6 || (scope.row.status === 7 && scope.row.isUseAnswerCard === 1)"
+                            type="text"
+                            size="small"
+                            style="color: #ED6D00"
+                            @click="goCheckCorrect"
+                        >
+                            查看批改
+                        </el-button>
+                        <el-button
+                            v-if="scope.row.status !== 1 && scope.row.status !== 2 && scope.row.status !== 9"
+                            type="text"
+                            size="small"
+                            style="color: #ED6D00"
+                            @click="goWorkStatistics"
+                            >作业统计</el-button
+                        >
+                        <el-button v-if="scope.row.status === 2" type="text" size="small" style="color: #ED6D00"
+                            >作业下发</el-button
+                        >
+                        <el-button
+                            v-if="scope.row.status === 2 || scope.row.status === 3"
+                            @click="handleClick(scope.row)"
+                            type="text"
+                            style="color: #ED6D00"
+                            size="small"
+                        >
+                            答案下发方式
+                        </el-button>
+                        <el-button v-if="scope.row.status === 3" type="text" size="small" style="color: #FF4542"
+                            >作业作废</el-button
+                        >
+                        <el-popover placement="top" width="160" :ref="`popover-${scope.$index}`">
+                            <p>你确定删除该作业吗？</p>
+                            <div style="text-align: right; margin: 0">
+                                <el-button
+                                    size="mini"
+                                    type="text"
+                                    @click="scope._self.$refs[`popover-${scope.$index}`].doClose()"
+                                    >取消</el-button
+                                >
+                                <el-button type="primary" size="mini" @click="delHomework(scope.row.id, scope)"
+                                    >确定</el-button
+                                >
+                            </div>
+                            <el-button
+                                class="del-btn"
+                                v-if="scope.row.status === 1 || scope.row.status === 2 || scope.row.status === 9"
+                                type="text"
+                                size="small"
+                                slot="reference"
+                                >删除
+                            </el-button>
+                        </el-popover>
+                    </template>
+                </el-table-column>
+            </el-table>
+        </div>
+        <router-view></router-view>
+    </div>
+</template>
+<script>
+import { $_getHomeworkList, $_delHomework } from './api';
+import { mapState, mapMutations } from 'vuex';
+
+export default {
+    name: 'taskList',
+
+    data() {
+        return {
+            showDelPopover: [],
+            tableStatus: ['', '新建中', '待下发', '已下发', '待批改', '批改中', '待发布', '已发布', '已收取', '作废'],
+            answerStatus: ['', '自行操作下发', '截止时间下发', '固定时间下发'],
+            // 分页
+            page: {
+                total: 0,
+                currentPage: 1,
+                pageSize: 10,
+                pageSizeOpts: [10, 50, 100, 200],
+            },
+            tableData: [],
+        };
+    },
+
+    computed: {
+        ...mapState({
+            courseId: (state) => state.teacherModule.courseId,
+            teacherId: (state) => state.teacherModule.teacherId,
+        }),
+    },
+
+    methods: {
+        ...mapMutations(['setTeacherData']),
+
+        navigateTo() {
+            this.$router.push({
+                path: '/teacherPage/taskCenter/addTask?type=1',
+            });
+        },
+
+        goCheckCorrect() {
+            this.$router.push({
+                path: '/teacherPage/taskCenter/checkCorrect',
+            });
+        },
+
+        goWorkStatistics() {
+            this.$router.push({
+                path: '/teacherPage/taskCenter/workStatistics',
+            });
+        },
+
+        // 获取作业列表
+        getHomeworkList() {
+            const params = {
+                courseId: this.courseId,
+                teacherId: this.teacherId,
+                page: this.page.currentPage,
+                limit: this.page.pageSize,
+            };
+            $_getHomeworkList(params).then((res) => {
+                this.tableData = res.result.records;
+            });
+        },
+
+        // 删除作业
+        delHomework(homeworkId, scope) {
+            scope._self.$refs[`popover-${scope.$index}`].doClose();
+            $_delHomework({ homeworkId }).then(() => {
+                this.getHomeworkList();
+                this.$message.success('删除作业成功');
+            });
+        },
+    },
+
+    created() {
+        this.setTeacherData({
+            courseId: 1,
+            teacherId: 111,
+            chapterId: 173, // 章节id
+            chapterName: '论语', // 课程名称
+            subjectId: 1, // 学科id
+            subjectName: '语文', // 学科名称
+        });
+    },
+
+    mounted() {
+        this.getHomeworkList();
+    },
+};
+</script>
+
+<style lang="scss">
+.taskListContainer {
+    .del-btn {
+        color: #ff4542;
+        margin-left: 10px;
+    }
+}
+</style>

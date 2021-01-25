@@ -1,0 +1,207 @@
+<template>
+    <div class="addTaskContainer">
+        <div class="stepWrapper">
+            <el-steps :active="stepAvtive" simple finish-status="success" process-status="wait">
+                <el-step :key="index" v-for="(item, index) in stepList" :title="item.name"> </el-step>
+            </el-steps>
+        </div>
+        <div class="uploadGrid">
+            <div class="upPdfWrapper">
+                <div class="noPdf" v-if="!isShowPdf">
+                    <el-upload
+                        ref="pdfUpload"
+                        class="upload-demo"
+                        :before-upload="onBeforeUpload"
+                        :show-file-list="false"
+                        accept=".pdf, .PDF"
+                    >
+                        <el-button type="warning">上传作业</el-button>
+                    </el-upload>
+                    <p>请选择 .PDF格式的文件</p>
+                </div>
+                <PdfCom v-else :fileUrl="fileUrl"></PdfCom>
+            </div>
+            <keep-alive>
+                <uploadTaskRule
+                    v-model="workData"
+                    @changeActive="uploadWork"
+                    @againUpload="againUpload"
+                    v-if="Number(stepAvtive) === 1 || Number(stepAvtive) === 0"
+                    :isShowPdf="isShowPdf"
+                ></uploadTaskRule>
+                <answerSheet v-if="Number(stepAvtive) === 2" @changeActive="changeActive" />
+                <setAnswer v-if="Number(stepAvtive) === 3"></setAnswer>
+            </keep-alive>
+        </div>
+    </div>
+</template>
+
+<script>
+import PdfCom from '_c/pdfCom';
+import uploadTaskRule from './uploadTaskRule';
+import answerSheet from './answerSheet';
+import setAnswer from './setAnswer';
+import { uploadFile } from '@/mixins/uploadFile.js';
+import { mapState } from 'vuex';
+import { $_addHomework } from './api';
+
+export default {
+    name: 'addTask',
+
+    components: {
+        PdfCom,
+        uploadTaskRule,
+        answerSheet,
+        setAnswer,
+    },
+
+    mixins: [uploadFile],
+
+    data() {
+        return {
+            // 上传作业
+            workData: {},
+            // 上传的paf
+            fileUrl: void 0,
+            isShowPdf: false,
+            stepAvtive: 1,
+            stepList: [
+                {
+                    name: '上传作业',
+                },
+                {
+                    name: '设置答题卡',
+                },
+                {
+                    name: '设置答案',
+                },
+            ],
+        };
+    },
+
+    computed: {
+        ...mapState({
+            courseId: (state) => state.teacherModule.courseId,
+            teacherId: (state) => state.teacherModule.teacherId,
+            chapterId: (state) => state.teacherModule.chapterId, // 章节id
+            chapterName: (state) => state.teacherModule.chapterName, // 课程名称
+            subjectId: (state) => state.teacherModule.subjectId, // 学科id
+            subjectName: (state) => state.teacherModule.subjectName, // 学科名称
+        }),
+    },
+
+    watch: {
+        isShowPdf: function(n) {
+            if (n) {
+                this.stepAvtive = 1;
+            }
+        },
+
+        stepAvtive(val) {
+            this.addParams(val);
+        },
+    },
+
+    methods: {
+        addParams(val) {
+            this.$router.replace({
+                query: {
+                    type: val,
+                },
+            });
+        },
+
+        changeActive(type) {
+            this.stepAvtive = Number(type);
+        },
+
+        uploadWork(type) {
+            if (!this.fileUrl) {
+                this.$message.error('请上传PDF格式的作业');
+                return;
+            }
+            this.workData.homeworkUrl = this.fileUrl;
+            this.workData.courseId = this.courseId;
+            this.workData.teacherId = this.teacherId;
+            this.workData.chapterId = this.chapterId; // 章节id
+            this.workData.chapterName = this.chapterName; // 课程名称
+            this.workData.subjectId = this.subjectId; // 学科id
+            this.workData.subjectName = this.subjectName; // 学科名称
+
+            $_addHomework(this.workData).then((res) => {
+                console.log(res);
+                this.changeActive(type);
+            });
+        },
+
+        onBeforeUpload(file) {
+            this.uploadqiniu(file).then((res) => {
+                this.fileUrl = res;
+                this.isShowPdf = true;
+            });
+            return false;
+        },
+
+        againUpload() {
+            this.isShowPdf = false;
+            this.fileUrl = void 0;
+        },
+    },
+};
+</script>
+
+<style lang="scss">
+.addTaskContainer {
+    width: 100%;
+    height: 100%;
+    max-height: 100%;
+    display: flex;
+    flex-direction: column;
+    .uploadGrid {
+        height: calc(100% - 46px);
+        max-height: calc(100% - 46px);
+        display: flex;
+        flex: 1;
+        padding-bottom: 10px;
+        box-sizing: border-box;
+        overflow: hidden;
+        .formWrapper {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            .bottomGrid {
+                display: flex;
+                justify-content: center;
+            }
+        }
+        .upPdfWrapper {
+            height: 100%;
+            max-height: 100%;
+            overflow: auto;
+            max-width: 720px;
+            width: 720px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 1px dashed #979797;
+            flex: 1;
+            margin-right: 20px;
+            .noPdf {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                flex-direction: column;
+                p {
+                    margin-top: 15px;
+                    font-size: 14px;
+                    font-weight: 400;
+                    color: rgba(0, 0, 0, 0.65);
+                }
+            }
+        }
+    }
+    .stepWrapper {
+        margin-bottom: 20px;
+    }
+}
+</style>

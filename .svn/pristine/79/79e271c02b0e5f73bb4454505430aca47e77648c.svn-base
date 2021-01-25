@@ -1,0 +1,456 @@
+<template>
+  <div class="assignments">
+    <div class="subject test-1">
+      <div class="pdf">
+        <pdf ref="pdf" :src="pdfUrl"></pdf>
+      </div>
+    </div>
+    <!-- 操作区域 -->
+    <div class="answer">
+      <div class="answerBtn">
+        <div
+          :class="active == item.id ? 'orange' : ''"
+          v-for="(item, index) in answer"
+          :key="index"
+          @click="handleMode(item.id)"
+        >
+          {{ item.name }}
+        </div>
+      </div>
+      <div class="card" v-if="active">
+        <div v-if="active">
+          <div class="title">我的作答</div>
+          <div class="type" v-for="item in 5" :key="item">
+            <div class="title pd">多选题</div>
+            <!-- 单选 -->
+            <!-- <div class="type-Single">
+              <div class="SingleItem" v-for="item in 5" :key="item">
+                {{ item }}.<el-button
+                  class="optionBtn"
+                  type="warning"
+                  size="small"
+                  round
+                >
+                  D
+                </el-button>
+              </div>
+            </div> -->
+            <!-- 多选 -->
+            <div class="type-Multiple">
+              <div class="SingleItem" v-for="item in 5" :key="item">
+                {{ item }}.<el-button
+                  v-for="item in 3"
+                  :key="item"
+                  class="optionBtn"
+                  type="warning"
+                  size="small"
+                  round
+                >
+                  D
+                </el-button>
+              </div>
+            </div>
+            <!-- 判断 -->
+            <!-- <div class="type-Judge">
+              <div class="SingleItem" v-for="item in 5" :key="item">
+                {{ item }}.<el-button
+                  class="optionBtn"
+                  type="warning"
+                  size="small"
+                  round
+                >
+                  错误
+                </el-button>
+              </div>
+            </div> -->
+          </div>
+        </div>
+        <div v-else>
+          <div class="title">我的作答</div>
+          <div style="height:1000px;"></div>
+        </div>
+      </div>
+      <div class="card" v-else>
+        <div v-if="active">
+          <div class="title">我的作答</div>
+          <div style="height:1000px;"></div>
+        </div>
+        <div v-else>
+          <div class="title">我的作答</div>
+          <div style="height:1000px;"></div>
+        </div>
+      </div>
+      <div class="Return">
+        <div>返回</div>
+      </div>
+    </div>
+    <!-- 个人统计 -->
+    <div class="dio" v-if="dialogVisible">
+      <div class="dio-heard">
+        <div>
+          个人统计
+          <div class="fl">
+            <i class="el-icon-close"></i>
+          </div>
+        </div>
+      </div>
+      <div class="count">
+        <el-progress
+          class="circle"
+          style="transform: rotateY(180deg);"
+          type="circle"
+          :percentage="percentage"
+          :color="colors"
+          :format="format"
+          :width="220"
+          :stroke-width="16"
+        >
+        </el-progress>
+        <div class="fraction">
+          <div class="fraction1">
+            120.0<span style="font-size:14px;color:rgba(151,151,151,1);"
+              >分</span
+            >
+          </div>
+          <div
+            style="font-size:14px;color:rgba(151,151,151,1);padding-left:4px;"
+          >
+            超过了 <span style="color:rgba(250,100,0,1)">85%</span> 的同学
+          </div>
+        </div>
+      </div>
+      <div class="footer">
+        <div>
+          <span>150.0</span>
+          <span class="colorC">试卷总分</span>
+        </div>
+        <div><span>45</span> <span class="colorC">答题用时 (分钟)</span></div>
+        <div>
+          <span style="color:#30CB82;">良好</span>
+          <span class="colorC">成绩等级</span>
+        </div>
+      </div>
+    </div>
+    <div class="win" v-if="dialogVisible" @click="handleBG">
+      <img src="../../../assets/win.png" alt="" />
+    </div>
+    <div class="divBG" v-if="dialogVisible" @click="handleBG"></div>
+  </div>
+</template>
+
+<script>
+import pdf from "vue-pdf";
+
+export default {
+  name: "homeWork",
+  components: {
+    pdf
+  },
+  data() {
+    return {
+      dialogVisible: true,
+      pdfUrl: "https://csfile.fuzhuxian.com/1592222322718",
+      active: 1,
+      answer: [{ id: 1, name: "答案" }, { id: 2, name: "我的作答" }],
+      percentage: 90,
+      colors: [
+        { color: "#f56c6c", percentage: 20 },
+        { color: "#e6a23c", percentage: 40 },
+        { color: "#5cb87a", percentage: 60 },
+        { color: "#1989fa", percentage: 80 },
+        { color: "#ee9444", percentage: 100 }
+      ]
+    };
+  },
+  methods: {
+    handleMode(n) {
+      this.active = n;
+    },
+    handleBG() {
+      console.log(11111);
+
+      this.dialogVisible = false;
+    },
+    format() {}
+  }
+};
+</script>
+
+<style scoped lang="scss">
+.assignments {
+  width: 100%;
+  height: 100%;
+  padding: 16px;
+  box-sizing: border-box;
+  display: flex;
+  .subject {
+    width: 718px;
+    height: 100%;
+    overflow: auto;
+    margin-right: 24px;
+    .pdf {
+      height: 1000px;
+    }
+  }
+  .answer {
+    .answerBtn {
+      width: 186px;
+      height: 36px;
+      line-height: 36px;
+      text-align: center;
+      background-color: #f0f2f5;
+      display: flex;
+      padding: 2px;
+      border-radius: 4px;
+      margin-bottom: 18px;
+      div {
+        flex: 1;
+        color: #303133;
+        border-radius: 2px;
+        cursor: pointer;
+        font-family: PingFangSC-Medium, PingFang SC;
+      }
+    }
+    .card {
+      width: 426px;
+      height: calc(100% - 116px);
+      background-color: #fafafa;
+      overflow: auto;
+      padding: 16px 32px 0 16px;
+      border: 1px solid #d8d8d8;
+      box-sizing: border-box;
+    }
+    .Return {
+      height: 40px;
+      width: 100%;
+      margin-top: 16px;
+      div {
+        width: 122px;
+        height: 40px;
+        line-height: 40px;
+        text-align: center;
+        cursor: pointer;
+        box-sizing: border-box;
+        border: 1px solid #ed6d00;
+        border-radius: 4px;
+        font-size: 14px;
+        font-family: PingFangSC-Regular, PingFang SC;
+        font-weight: 400;
+        color: rgba(237, 109, 0, 1);
+      }
+      div:active {
+        border: 1px solid #ed3;
+      }
+    }
+    .title {
+      color: #092238;
+      font-size: 18px;
+      font-family: PingFangSC-Medium, PingFang SC;
+      font-weight: 500;
+    }
+    .type-Single {
+      color: #092238;
+      font-family: PingFangSC-Medium, PingFang SC;
+      background-color: #fff;
+      display: flex;
+      flex-direction: column;
+      .SingleItem {
+        height: 50px;
+        line-height: 50px;
+        padding-left: 20px;
+        .optionBtn {
+          margin-left: 10px;
+          width: 48px;
+          height: 24px;
+          align-items: center;
+          line-height: 0;
+        }
+      }
+    }
+    .type-Multiple {
+      color: #092238;
+      font-family: PingFangSC-Medium, PingFang SC;
+      background-color: #fff;
+      display: flex;
+      flex-direction: column;
+      .SingleItem {
+        height: 50px;
+        line-height: 50px;
+        padding-left: 20px;
+        .optionBtn {
+          margin-left: 10px;
+          width: 48px;
+          height: 24px;
+          align-items: center;
+          line-height: 0;
+        }
+      }
+    }
+    .type-Judge {
+      color: #092238;
+      font-family: PingFangSC-Medium, PingFang SC;
+      background-color: #fff;
+      display: flex;
+      flex-direction: column;
+      .SingleItem {
+        height: 50px;
+        line-height: 50px;
+        padding-left: 20px;
+        display: flex;
+        align-items: center;
+        .optionBtn {
+          margin-left: 10px;
+          width: 48px;
+          height: 24px;
+          align-items: center;
+          line-height: 0;
+          display: flex;
+          justify-content: center;
+        }
+      }
+    }
+  }
+}
+
+.pd {
+  margin: 10px 0;
+}
+.orange {
+  background-color: #fff;
+  color: #ed6d00 !important;
+}
+.test-1::-webkit-scrollbar {
+  /*滚动条整体样式*/
+  width: 10px; /*高宽分别对应横竖滚动条的尺寸*/
+  height: 1px;
+}
+.test-1::-webkit-scrollbar-thumb {
+  /*滚动条里面小方块*/
+  border-radius: 10px;
+  box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.2);
+  background: #535353;
+}
+.test-1::-webkit-scrollbar-track {
+  /*滚动条里面轨道*/
+  box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.2);
+  border-radius: 10px;
+  background: #ededed;
+}
+.win {
+  width: 1000px;
+  height: 1000px;
+  position: fixed;
+  z-index: 999;
+  top: 50%;
+  margin-top: -500px;
+  margin-left: -500px;
+  left: 50%;
+  transform: rotate(180deg);
+  // -ms-transform: rotate(7deg); /* IE 9 */
+  // -moz-transform: rotate(7deg); /* Firefox */
+  // -webkit-transform: rotate(7deg); /* Safari 和 Chrome */
+  // -o-transform: rotate(7deg); /* Opera */
+  img {
+    width: 100%;
+    height: 100%;
+    -webkit-transform: rotate(360deg);
+    animation: rotation 8s linear infinite;
+    -moz-animation: rotation 8s linear infinite;
+    -webkit-animation: rotation 8s linear infinite;
+    -o-animation: rotation 8s linear infinite;
+  }
+}
+@-webkit-keyframes rotation {
+  from {
+    -webkit-transform: rotate(0deg);
+  }
+  to {
+    -webkit-transform: rotate(360deg);
+  }
+}
+.divBG {
+  position: fixed;
+  top: 0px;
+  left: 0px;
+  height: 100%;
+  width: 100%;
+  background-color: #000;
+  filter: alpha(opacity=60); /*IE*/
+  -moz-opacity: 0.6; /*old Mozilla*/
+  -khtml-opacity: 0.6; /*old Safari*/
+  opacity: 0.6; /*Chrome, Opera, Safari*/
+  z-index: 100;
+}
+
+.dio {
+  z-index: 1000;
+  width: 554px;
+  height: 496px;
+  position: absolute;
+  background-color: #fff;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  border-radius: 8px;
+  .dio-heard {
+    width: 100%;
+    height: 80px;
+    box-sizing: border-box;
+    padding: 16px 20px 0 20px;
+    font-size: 18px;
+    font-family: PingFangSC-Medium, PingFang SC;
+    font-weight: 500;
+    color: rgba(9, 34, 56, 1);
+  }
+  .count {
+    width: 100%;
+    height: 220px;
+    position: relative;
+    .circle {
+      width: 220px;
+      height: 220px;
+      margin-left: 167px;
+    }
+    .fraction {
+      position: absolute;
+      left: 210px;
+      top: 70px;
+      width: 135px;
+      .fraction1 {
+        display: inline-block;
+        font-size: 48px;
+        font-family: PingFangSC-Regular, PingFang SC;
+        font-weight: 500;
+        color: rgba(9, 34, 56, 1);
+      }
+    }
+  }
+  .footer {
+    height: 195px;
+    width: 100%;
+    padding-top: 73px;
+    font-family: PingFangSC-Medium, PingFang SC;
+    font-weight: 500;
+    color: rgba(9, 34, 56, 1);
+    font-size: 40px;
+    box-sizing: border-box;
+    display: flex;
+    text-align: center;
+    div {
+      flex: 1;
+      height: 80px;
+    }
+  }
+}
+.colorC {
+  font-size: 14px;
+  font-weight: 400;
+  color: rgba(151, 151, 151, 1);
+  display: block;
+}
+.fl {
+  float: right;
+}
+.count .el-progress-circle /deep/ {
+}
+</style>

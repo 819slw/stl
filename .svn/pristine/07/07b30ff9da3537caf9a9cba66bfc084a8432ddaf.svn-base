@@ -1,0 +1,105 @@
+import Vue from 'vue';
+import VueRouter from 'vue-router';
+
+const Home = () => import('../views/wel/index');
+const StudentPage = () => import('../views/studentPage/index');
+const TeacherPage = () => import('../views/teacherPage/index');
+
+const TaskCenter = () => import('../views/teacherPage/taskCenter/index');
+const TaskList = () => import('../views/teacherPage/taskCenter/taskList/index');
+const AddTask = () => import('../views/teacherPage/taskCenter/addTask/index');
+const CheckCorrect = () => import('../views/teacherPage/taskCenter/checkCorrect/index');
+const WorkStatistics = () => import('../views/teacherPage/taskCenter/workStatistics/index');
+const CorrectCard = () => import('../views/teacherPage/taskCenter/correctCard/index');
+
+
+// 学生端
+const WorkCenter = () => import('../views/studentPage/workCenter/index');
+const homeWork = () => import('../views/studentPage/homeWork/index'); // 查看作业
+const answerSheet = () => import('../views/studentPage/answerSheet/index'); // 答题卡作答
+const nonAnswer = () => import('../views/studentPage/nonAnswer/index'); // 答题卡作答
+
+
+Vue.use(VueRouter);
+
+const routes = [{
+  path: '/',
+  name: '个人中心',
+  component: Home,
+  children: [{
+    path: 'teacherPage',
+    component: TeacherPage,
+    redirect: 'teacherPage/taskCenter/taskList',
+    name: '我的课程',
+    children: [{
+      path: 'taskCenter',
+      component: TaskCenter,
+      redirect: 'teacherPage/taskCenter/taskList',
+      name: '作业列表',
+      children: [{
+        path: 'taskList',
+        component: TaskList,
+        name: '新建作业',
+      },
+      {
+        path: 'addTask',
+        component: AddTask,
+        name: '新建作业',
+      },
+      {
+        path: 'checkCorrect',
+        component: CheckCorrect,
+        name: '作业批改列表',
+      },
+      {
+        path: 'workStatistics',
+        component: WorkStatistics,
+        name: '作业统计列表',
+      },
+      {
+        path: 'correctCard',
+        component: CorrectCard,
+        name: '作业批改',
+      },
+      ],
+    },],
+  },
+  {
+    path: "studentPage",
+    component: StudentPage,
+    redirect: 'studentPage/workCenter',
+    name: "我的作业",
+    children: [{
+      path: 'workCenter',
+      component: WorkCenter,
+      // redirect: 'studentPage/workCenter',
+      name: '作业列表',
+
+    }, {
+      path: 'homeWork',
+      component: homeWork,
+      name: '作业作答'
+    }, {
+      path: 'answerSheet',
+      component: answerSheet,
+      name: '作业作答'
+    }, {
+      path: 'nonAnswer',
+      component: nonAnswer,
+      name: '作业作答'
+    }]
+  }
+  ],
+},];
+
+const router = new VueRouter({
+  mode: 'history',
+  base: process.env.BASE_URL,
+  routes,
+});
+
+router.beforeEach((to, from, next) => {
+  next();
+});
+
+export default router;

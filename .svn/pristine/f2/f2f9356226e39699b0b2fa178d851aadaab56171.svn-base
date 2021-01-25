@@ -1,0 +1,405 @@
+<template>
+    <div class="answer-container">
+        <div class="setAnswerContainer">
+            <p class="setTitle">答题卡</p>
+            <!-- 题型遍历 -->
+            <div class="subjectList" v-for="(item, index) in subjectList" :key="index">
+                <div class="topInfo">
+                    <div class="subTitle">
+                        <p class="title">{{ item.name }}</p>
+                        <div class="chooseUploadType" v-if="item.uploadType || item.uploadType == 0">
+                            <el-radio-group v-model="item.uploadType">
+                                <el-radio
+                                    v-for="(typeItem, typeIndex) in uploadTypeList"
+                                    :key="typeIndex"
+                                    :label="typeItem.val"
+                                    >{{ typeItem.name }}</el-radio
+                                >
+                            </el-radio-group>
+                            <el-tooltip
+                                class="item"
+                                effect="dark"
+                                content="📱 手机扫描二维码 拍照上传答题"
+                                placement="top"
+                            >
+                                <img src="@/assets/scanningQrcode.png" />
+                            </el-tooltip>
+                        </div>
+                    </div>
+                    <ul class="subInfo">
+                        <!-- 题型中的某个题的遍历 -->
+                        <li :key="i" v-for="(el, i) in item.list" class="subGrid">
+                            <div class="answerItem">
+                                <p class="sortIndex">{{ i + 1 }}.</p>
+
+                                <!-- 单选 / 多选的选项遍历 -->
+                                <div class="subTypeGrid" v-if="Number(item.type) === 1 || Number(item.type) === 2">
+                                    <el-button
+                                        @click="setOptionActive(item.type, index, i, optionIndex)"
+                                        class="optionBtn"
+                                        :key="optionIndex"
+                                        v-for="(optionRes, optionIndex) in el.optionList"
+                                        :type="optionRes.isActive ? 'warning' : ''"
+                                        size="small"
+                                        round
+                                    >
+                                        {{ optionRes.name }}
+                                    </el-button>
+                                </div>
+
+                                <!-- 判断题选项遍历 -->
+                                <div class="subTypeGrid" v-else-if="Number(item.type) === 3">
+                                    <el-button
+                                        @click="setJudgeActive(index, i, optionIndex)"
+                                        class="optionBtn"
+                                        :key="optionIndex"
+                                        v-for="(optionRes, optionIndex) in el.optionList"
+                                        :type="optionRes.isActive ? 'warning' : ''"
+                                        size="small"
+                                        round
+                                    >
+                                        {{ optionRes.name }}
+                                    </el-button>
+                                </div>
+                                <!-- 主观题UI -->
+                                <div class="subTypeGrid" v-else>
+                                    <div class="imgList">
+                                        <upload-img
+                                            :imageUrl="item.answerUrl"
+                                            :single="false"
+                                            refDom="clearErrorone"
+                                            word="communityLogo"
+                                            @addSignPic="updateIcon"
+                                            :disabled="isUpimg"
+                                        ></upload-img>
+                                    </div>
+                                </div>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="select-type">
+            <el-form label-width="120px">
+                <el-form-item label="答案下发方式">
+                    <el-select v-model="answerDistributionMethod" placeholder="请选择">
+                        <el-option
+                            v-for="(item, index) in answerMethod"
+                            :key="index"
+                            :label="item"
+                            :value="index + 1"
+                        >
+                        </el-option>
+                    </el-select>
+                </el-form-item>
+            </el-form>
+        </div>
+        <div class="bottomGrid">
+            <el-row>
+                <el-button class="plain-btn" @click="beforePage">上一步</el-button>
+                <el-button type="warning" @click="onSubmit">保存并下一步</el-button>
+                <el-button class="plain-btn">保存</el-button>
+            </el-row>
+        </div>
+    </div>
+</template>
+
+<script>
+import uploadImg from '@/components/uploadImg';
+
+export default {
+    components: {
+        uploadImg,
+    },
+    data() {
+        return {
+            activeColor: '#ED6D00',
+            subjectList: [],
+            answerDistributionMethod: 1,
+            answerMethod: ['自行操作下发', '截止时间下发', '固定时间下发'],
+            uploadTypeList: [
+                {
+                    name: '分题上传',
+                    val: 0,
+                },
+                {
+                    name: '整体上传',
+                    val: 1,
+                },
+            ],
+            judgeSubList: [
+                {
+                    name: '正确',
+                    val: 1,
+                    isActive: false,
+                },
+                {
+                    name: '错误',
+                    val: 0,
+                    isActive: false,
+                },
+            ],
+            resultArr: [
+                {
+                    type: 1,
+                    name: '单选题',
+                    value: 'A,B,C,D,E',
+                    sort: 1,
+                },
+                {
+                    type: 1,
+                    name: '单选题',
+                    value: 'A,B,C,D,E',
+                    sort: 2,
+                },
+                {
+                    type: 1,
+                    name: '单选题',
+                    value: 'A,B,C,D,E',
+                    sort: 3,
+                },
+                {
+                    type: 1,
+                    name: '单选题',
+                    value: 'A,B,C,D,E',
+                    sort: 4,
+                },
+                {
+                    type: 2,
+                    name: '多选',
+                    value: 'A,B,C,D,E',
+                    sort: 5,
+                },
+                {
+                    type: 2,
+                    name: '多选',
+                    value: 'A,B,C,D,E',
+                    sort: 6,
+                },
+                {
+                    type: 2,
+                    name: '多选',
+                    value: 'A,B,C,D,E',
+                    sort: 7,
+                },
+                {
+                    type: 3,
+                    name: '判断',
+                    sort: 8,
+                },
+                {
+                    type: 3,
+                    name: '判断',
+                    sort: 9,
+                },
+                {
+                    type: 3,
+                    name: '判断',
+                    sort: 10,
+                },
+                {
+                    type: 4,
+                    name: '填空',
+                    sort: 11,
+                },
+                {
+                    type: 4,
+                    name: '填空',
+                    sort: 12,
+                },
+                {
+                    type: 4,
+                    name: '填空',
+                    sort: 13,
+                },
+            ],
+        };
+    },
+    created() {
+        this.resultArr.forEach((res) => {
+            // 先看存不存在这类题型
+            let isLive = this.subjectList.findIndex((v) => v.type === res.type);
+
+            if (Number(res.type) === 1) {
+                // res = this.setOption(res)
+            }
+
+            if (isLive > -1) {
+                // 存在就直接push
+                this.subjectList[isLive].list.push(res);
+            } else {
+                // 不存在就先创建
+                this.subjectList.push({
+                    type: res.type,
+                    name: res.name,
+                    list: [res],
+                });
+                isLive = this.subjectList.length - 1;
+            }
+
+            // 组装 + 添加访问器属性
+            if (Number(res.type) === 1 || Number(res.type) === 2) {
+                this.setChooseSubAccessorAttribute(isLive, res);
+            } else if (Number(res.type) === 3) {
+                this.setJudgeSubAccessorAttribute(isLive, res);
+            } else {
+                // 其余类型都必须配置一个开关 代表是否是整体上传还是分体上传，默认是分体上传
+                this.setSubjectiveAccessorAttribute(isLive, res);
+            }
+        });
+    },
+    methods: {
+        // 设置主观题目的访问器属性
+        setSubjectiveAccessorAttribute(totalIndex) {
+            // 添加是否展示单选框组（选择是分题还是整体上传）的属性
+            this.$set(this.subjectList[totalIndex], 'uploadType', 0);
+            // 添加上传图片的属性（图片最多三张，暂定用String，转换为数组展示）
+            this.$set(this.subjectList[totalIndex].list[this.subjectList[totalIndex].list.length - 1], 'answerUrl', '');
+        },
+        // 设置判断题目的访问器属性
+        setJudgeSubAccessorAttribute(totalIndex) {
+            this.$set(
+                this.subjectList[totalIndex].list[this.subjectList[totalIndex].list.length - 1],
+                'optionList',
+                []
+            );
+            this.judgeSubList.forEach((el, index) => {
+                this.$set(
+                    this.subjectList[totalIndex].list[this.subjectList[totalIndex].list.length - 1].optionList,
+                    index,
+                    { ...el }
+                );
+            });
+        },
+        // 设置选择题目的访问器属性
+        setChooseSubAccessorAttribute(totalIndex, res) {
+            let arr = res.value.split(',');
+            this.$set(
+                this.subjectList[totalIndex].list[this.subjectList[totalIndex].list.length - 1],
+                'optionList',
+                []
+            );
+            (arr || []).forEach((el, index) => {
+                this.$set(
+                    this.subjectList[totalIndex].list[this.subjectList[totalIndex].list.length - 1].optionList,
+                    index,
+                    {
+                        name: el,
+                        isActive: false,
+                    }
+                );
+            });
+        },
+        setJudgeActive(index, i, optionIndex) {
+            this.subjectList[index].list[i].optionList.map((v) => {
+                v.isActive = false;
+            });
+            this.subjectList[index].list[i].optionList[optionIndex].isActive = true;
+        },
+        setOptionActive(type, index, i, optionIndex) {
+            if (Number(type) === 1) {
+                this.subjectList[index].list[i].optionList.map((v) => {
+                    v.isActive = false;
+                });
+            } else {
+                let isChoosed = this.subjectList[index].list[i].optionList.findIndex((v) => v.isActive);
+                if (isChoosed === optionIndex) {
+                    this.subjectList[index].list[i].optionList[optionIndex].isActive = false;
+                    return;
+                }
+            }
+            this.subjectList[index].list[i].optionList[optionIndex].isActive = true;
+        },
+    },
+};
+</script>
+
+<style lang="scss">
+.answer-container {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    .bottomGrid {
+        .el-button.plain-btn,
+        .el-button.plain-btn:focus,
+        .el-button.plain-btn:hover {
+            color: #ed6d00;
+            border: 1px solid #ed6d00;
+        }
+    }
+    .select-type {
+        height: 56px;
+        padding-top: 16px;
+    }
+}
+
+.setAnswerContainer {
+    flex: 1;
+    background: #fff;
+    padding: 16px;
+    flex: 1;
+    overflow: auto;
+    border: 1px solid #d8d8d8;
+    box-sizing: border-box;
+    .setTitle {
+        font-size: 18px;
+        font-weight: 600;
+        color: rgba(9, 34, 56, 1);
+    }
+    .subInfo {
+        background: #fff;
+        padding-top: 16px;
+        .subGrid {
+            list-style: none;
+            padding-bottom: 16px;
+            .sortIndex {
+                font-size: 14px;
+                font-weight: 500;
+                color: rgba(9, 34, 56, 1);
+            }
+            .answerItem {
+                display: flex;
+                padding-left: 20px;
+                align-items: center;
+                .subTypeGrid {
+                    display: flex;
+                    align-items: center;
+                }
+                .optionBtn {
+                    margin-left: 20px;
+                    width: 48px;
+                    height: 24px;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    line-height: 0;
+                }
+            }
+        }
+    }
+    .subTitle {
+        font-size: 16px;
+        font-weight: 500;
+        color: rgba(9, 34, 56, 1);
+        margin: 10px 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        .title {
+            font-weight: 600;
+        }
+        .chooseUploadType {
+            display: flex;
+            align-items: center;
+            img {
+                width: 16px;
+                height: 16px;
+                padding: 4px;
+                margin-left: 5px;
+                cursor: pointer;
+            }
+        }
+    }
+}
+</style>
